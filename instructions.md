@@ -15,7 +15,7 @@ USE myDatabase
 GO
 
 CREATE ASSEMBLY SqlWebRequest
-FROM 'D:\vsonline\OPERAHOUSE\addOns\webRequest\webRequest\bin\Debug\webRequest.dll'
+FROM 'D:\vsonline\addOns\webRequest\bin\Debug\webRequest.dll'
 WITH PERMISSION_SET=UNSAFE;
 GO
 
@@ -27,7 +27,7 @@ CREATE FUNCTION gen.fn_get_webrequest(
 )
 RETURNS nvarchar(max)
 AS
-EXTERNAL NAME SqlWebRequest.[webRequest.Functions].GET;
+EXTERNAL NAME WebRequest.[webRequest.Functions].GET;
 
 GO
 
@@ -40,7 +40,7 @@ CREATE FUNCTION gen.fn_post_webrequest(
 RETURNS nvarchar(max)
 AS
 
-EXTERNAL NAME SqlWebRequest.[webRequest.Functions].POST;
+EXTERNAL NAME WebRequest.[webRequest.Functions].POST;
 
 GO
 
