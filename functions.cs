@@ -57,14 +57,14 @@ namespace webRequest
 
         // Function to submit a HTTP POST and return the resulting output.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd)
+        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers)
         {
-            SqlString document="";
+            SqlString document = "";
 
             try
             {
                 SqlPipe pipe = SqlContext.Pipe;
-                
+
                 byte[] postByteArray = Encoding.UTF8.GetBytes(Convert.ToString(postData));
 
                 var urix = new Uri(Convert.ToString(uri));
@@ -86,6 +86,14 @@ namespace webRequest
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(Convert.ToString(uri));
                 req.ServicePoint.Expect100Continue = false;
+                if (headers != "")
+                {
+                    foreach (string x in headers.ToString().Split('&'))
+                    {
+                        var x1 = x.Split('=');
+                        req.Headers.Add(x1[0], x1[1]);
+                    }
+                }
 
                 req.UserAgent = "CLR web client on SQL Server";
                 if (Convert.ToString(username) != null & Convert.ToString(username) != "")
@@ -134,6 +142,6 @@ namespace webRequest
             return (document);
         }
 
-        
+
     }
 }
