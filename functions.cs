@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Data;
-using System.Data.SqlClient;
 using System.Data.SqlTypes;
-using System.Collections;
-using System.Globalization;
 
 // For the SQL Server integration
 using Microsoft.SqlServer.Server;
@@ -13,9 +9,6 @@ using System.Net;
 using System.Text;
 using System.IO;
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace webRequest
 {
@@ -142,6 +135,15 @@ namespace webRequest
             return (document);
         }
 
+        public static SqlBoolean Download(SqlString uri, SqlString localPath)
+        {
+            
+            using (var client = new WebClient())
+            {
+                client.DownloadFile(uri.ToString(), localPath.ToString());
+            }
+            return (File.Exists(localPath.ToString()));
+        }
 
     }
 }
