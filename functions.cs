@@ -10,13 +10,14 @@ using System.Text;
 using System.IO;
 
 
+
 namespace webRequest
 {
     public partial class Functions
     {
         // Function to return a web URL as a string value.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd)
+        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd, SqlString proxyHost, SqlInt16 proxyPort)
         {
             // The SqlPipe is how we send data back to the caller
             SqlPipe pipe = SqlContext.Pipe;
@@ -24,6 +25,10 @@ namespace webRequest
 
             // Set up the request, including authentication
             WebRequest req = WebRequest.Create(Convert.ToString(uri));
+            if (Convert.ToString(proxyHost) != null & Convert.ToInt16(proxyPort) > 0)
+            {
+                req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort));
+            }
             if (Convert.ToString(username) != null & Convert.ToString(username) != "")
             {
                 req.Credentials = new NetworkCredential(
@@ -50,7 +55,7 @@ namespace webRequest
 
         // Function to submit a HTTP POST and return the resulting output.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers)
+        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers, SqlString proxyHost, SqlInt16 proxyPort)
         {
             SqlString document = "";
 
@@ -79,6 +84,11 @@ namespace webRequest
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(Convert.ToString(uri));
                 req.ServicePoint.Expect100Continue = false;
+                if (Convert.ToString(proxyHost) != null & Convert.ToInt16(proxyPort) > 0)
+                {
+                    req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort));
+                }
+
                 if (headers != "")
                 {
                     foreach (string x in headers.ToString().Split('&'))
@@ -88,13 +98,21 @@ namespace webRequest
                     }
                 }
 
-                req.UserAgent = "CLR web client on SQL Server";
                 if (Convert.ToString(username) != null & Convert.ToString(username) != "")
                 {
                     req.Credentials = new NetworkCredential(
                         Convert.ToString(username),
                         Convert.ToString(passwd));
                 }
+                if (Convert.ToString(username) != null & Convert.ToString(username) != "")
+                {
+                    req.Credentials = new NetworkCredential(
+                        Convert.ToString(username),
+                        Convert.ToString(passwd));
+                }
+                req.UserAgent = "CLR web client on SQL Server";
+
+
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
 
@@ -135,15 +153,29 @@ namespace webRequest
             return (document);
         }
 
-        public static SqlBoolean Download(SqlString uri, SqlString localPath)
+        public static SqlBoolean Download(SqlString uri, SqlString localPath,SqlString username, SqlString passwd, SqlString proxyHost, SqlInt16 proxyPort)
         {
             
             using (var client = new WebClient())
             {
+                if (Convert.ToString(username) != null & Convert.ToString(username) != "")
+                {
+                    client.Credentials = new NetworkCredential(
+                        Convert.ToString(username),
+                        Convert.ToString(passwd));
+                }
+                if (Convert.ToString(username) != null & Convert.ToString(username) != "")
+                {
+                    client.Credentials = new NetworkCredential(
+                        Convert.ToString(username),
+                        Convert.ToString(passwd));
+                }
+
                 client.DownloadFile(uri.ToString(), localPath.ToString());
             }
             return (File.Exists(localPath.ToString()));
         }
 
+      
     }
 }
