@@ -9,15 +9,13 @@ using System.Net;
 using System.Text;
 using System.IO;
 
-
-
 namespace webRequest
 {
     public partial class Functions
     {
         // Function to return a web URL as a string value.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd, SqlString proxyHost, SqlInt16 proxyPort)
+        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd, SqlString proxyHost, SqlInt16 proxyPort, SqlString userAgent)
         {
             // The SqlPipe is how we send data back to the caller
             SqlPipe pipe = SqlContext.Pipe;
@@ -25,17 +23,22 @@ namespace webRequest
 
             // Set up the request, including authentication
             WebRequest req = WebRequest.Create(Convert.ToString(uri));
-            if (Convert.ToString(proxyHost) != null & Convert.ToInt16(proxyPort) > 0)
+            
+            if (Convert.ToString(proxyHost) != null & proxyPort.IsNull & Convert.ToInt16(proxyPort.ToString()) > 0)
             {
-                req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort));
+                req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort.ToString()));
             }
+
             if (Convert.ToString(username) != null & Convert.ToString(username) != "")
             {
                 req.Credentials = new NetworkCredential(
                     Convert.ToString(username),
                     Convert.ToString(passwd));
             }
-            ((HttpWebRequest)req).UserAgent = "CLR web client on SQL Server";
+            else req.UseDefaultCredentials = true;
+
+            if (userAgent == null) userAgent = "CLR web client on SQL Server";
+            ((HttpWebRequest)req).UserAgent = userAgent.ToString();
 
             // Fire off the request and retrieve the response.
             // We'll put the response in the string variable "document".
@@ -55,7 +58,7 @@ namespace webRequest
 
         // Function to submit a HTTP POST and return the resulting output.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers, SqlString proxyHost, SqlInt16 proxyPort)
+        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers, SqlString proxyHost, SqlInt16 proxyPort, SqlString userAgent)
         {
             SqlString document = "";
 
@@ -84,9 +87,10 @@ namespace webRequest
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(Convert.ToString(uri));
                 req.ServicePoint.Expect100Continue = false;
-                if (Convert.ToString(proxyHost) != null & Convert.ToInt16(proxyPort) > 0)
+                
+                if (Convert.ToString(proxyHost) != null & proxyPort.IsNull & Convert.ToInt16(proxyPort.ToString()) > 0)
                 {
-                    req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort));
+                    req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort.ToString()));
                 }
 
                 if (headers != "")
@@ -110,15 +114,13 @@ namespace webRequest
                         Convert.ToString(username),
                         Convert.ToString(passwd));
                 }
-                req.UserAgent = "CLR web client on SQL Server";
+                else req.UseDefaultCredentials = true;
 
+                if (userAgent == null) userAgent = "CLR web client on SQL Server";
+                ((HttpWebRequest)req).UserAgent = userAgent.ToString();
 
                 req.Method = "POST";
                 req.ContentType = "application/x-www-form-urlencoded";
-
-
-                //System.Net.ServicePointManager.Expect100Continue = false;
-
 
                 // Submit the POST data
                 Stream dataStream = req.GetRequestStream();
@@ -170,6 +172,7 @@ namespace webRequest
                         Convert.ToString(username),
                         Convert.ToString(passwd));
                 }
+                else client.UseDefaultCredentials = true;
 
                 client.DownloadFile(uri.ToString(), localPath.ToString());
             }

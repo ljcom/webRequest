@@ -1,3 +1,18 @@
 bin/
 obj/
 
+/.vs/webRequest/v16/Server/sqlite3/db.lock
+/.vs/webRequest/v16/Server/sqlite3/storage.ide-wal
+/.vs/webRequest/v16/Server/sqlite3/storage.ide-shm
+/.vs/webRequest/v16/Server/sqlite3/storage.ide
+/.vs/webRequest/v16/.suo
+/.vs/webRequest/v14/.suo
+/packages/HtmlAgilityPack.1.8.9/lib/Net20/HtmlAgilityPack.xml
+/packages/HtmlAgilityPack.1.8.9/lib/Net20/HtmlAgilityPack.pdb
+/packages/HtmlAgilityPack.1.8.9/lib/Net20/HtmlAgilityPack.dll
+/packages/HtmlAgilityPack.1.8.9/lib/Net40/HtmlAgilityPack.XML
+/packages/HtmlAgilityPack.1.8.9/lib/Net40/HtmlAgilityPack.pdb
+/packages/HtmlAgilityPack.1.8.9/lib/Net40/HtmlAgilityPack.dll
+/packages/HtmlAgilityPack.1.8.9/lib/Net40-client/HtmlAgilityPack.dll
+/packages/HtmlAgilityPack.1.8.9/lib/Net40-client/HtmlAgilityPack.pdb
+/packages/HtmlAgilityPack.1.8.9/lib/Net40-client/HtmlAgilityPack.xml
