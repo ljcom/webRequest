@@ -15,7 +15,8 @@ namespace webRequest
     {
         // Function to return a web URL as a string value.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd, SqlString proxyHost, SqlInt16 proxyPort, SqlString userAgent)
+        public static SqlString GET(SqlString uri, SqlString username, SqlString passwd, 
+               SqlString proxyHost, SqlInt16 proxyPort, SqlString userAgent, SqlInt16 timeOut)
         {
             // The SqlPipe is how we send data back to the caller
             SqlPipe pipe = SqlContext.Pipe;
@@ -23,7 +24,7 @@ namespace webRequest
 
             // Set up the request, including authentication
             WebRequest req = WebRequest.Create(Convert.ToString(uri));
-            
+            if (timeOut > 0) req.Timeout = 60 * int.Parse(timeOut.ToString()) * 1000;
             if (Convert.ToString(proxyHost) != null & proxyPort.IsNull & Convert.ToInt16(proxyPort.ToString()) > 0)
             {
                 req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort.ToString()));
@@ -58,7 +59,9 @@ namespace webRequest
 
         // Function to submit a HTTP POST and return the resulting output.
         [Microsoft.SqlServer.Server.SqlFunction(DataAccess = DataAccessKind.Read)]
-        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, SqlString passwd, SqlString headers, SqlString proxyHost, SqlInt16 proxyPort, SqlString userAgent)
+        public static SqlString POST(SqlString uri, SqlString postData, SqlString username, 
+                SqlString passwd, SqlString headers, SqlString proxyHost, SqlInt16 proxyPort, 
+                SqlString userAgent, SqlInt16 timeOut)
         {
             SqlString document = "";
 
@@ -67,11 +70,11 @@ namespace webRequest
                 SqlPipe pipe = SqlContext.Pipe;
 
                 byte[] postByteArray = Encoding.UTF8.GetBytes(Convert.ToString(postData));
-
+                
                 var urix = new Uri(Convert.ToString(uri));
                 var p = ServicePointManager.FindServicePoint(urix);
                 p.Expect100Continue = false;
-
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
 
                 //// Create a WebPermission.
                 //WebPermission myWebPermission1 = new WebPermission();
@@ -86,8 +89,10 @@ namespace webRequest
                 // method=POST and encoding:
 
                 HttpWebRequest req = (HttpWebRequest)WebRequest.Create(Convert.ToString(uri));
+                if (timeOut>0) req.Timeout = 60 * int.Parse(timeOut.ToString()) * 1000;
                 req.ServicePoint.Expect100Continue = false;
-                
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+
                 if (Convert.ToString(proxyHost) != null & proxyPort.IsNull & Convert.ToInt16(proxyPort.ToString()) > 0)
                 {
                     req.Proxy = new WebProxy(Convert.ToString(proxyHost), Convert.ToInt16(proxyPort.ToString()));
